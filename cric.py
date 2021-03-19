@@ -1,56 +1,64 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
-final = pd.read_csv('1237181.csv')
+match = pd.read_csv('1237181.csv')
 
-inningOne = final[final.innings == 1]
+def runs(inning):
+    innings = match[match.innings == inning]
+    innings = innings.reset_index()
+    del innings['index']
+    wicket = innings.wicket_type
+    innings_formatted = innings[['runs_off_bat', 'extras']].sum(1)
 
-wicket = inningOne.wicket_type
+    currentRun = []
+    for i in range(innings_formatted.count()):
+        if (i == 0):
+            currentRun.append(innings_formatted[i])
+        else:
+            currentRun.append(currentRun[i-1] + innings_formatted[i])
 
-inningOne_formatted = inningOne[['runs_off_bat', 'extras']]
-inning1_runBall = inningOne_formatted.sum(1)
+    finalRuns = pd.DataFrame(currentRun, columns = ['score']);
+    finalRuns['wicket'] = wicket 
 
-currentRun = []
-for i in range(inning1_runBall.count()):
-    if (i == 0):
-        currentRun.append(inning1_runBall[i])
-    else:
-        currentRun.append(currentRun[i-1] + inning1_runBall[i])
+    fow = []
+    for i in range(finalRuns.score.count()):
+        if (type(finalRuns.wicket[i]) == str):
+            fow.append(True)
+        else:
+            fow.append(False)
 
-finalRuns = pd.DataFrame(currentRun, columns = ['score']);
-finalRuns['wicket'] = wicket 
+    finalRuns['fow'] = fow
+    del finalRuns['wicket']
 
-fow = []
-for i in range(finalRuns.score.count()):
-    if (type(finalRuns.wicket[i]) == str):
-        fow.append(True)
-    else:
-        fow.append(False)
+    return finalRuns
 
-finalRuns['fow'] = fow
-del finalRuns['wicket']
+def fow(runs):
+    finalFOW = []
+    for i in range(runs.score.count()):
+        if (runs.fow[i] == True):
+            finalFOW.append(runs.score[i])
+        else:
+            finalFOW.append(None)
+    
+    return finalFOW
 
+inn1 = runs(1)
+inn2 = runs(2)
 
-finalFOW = []
-for i in range(finalRuns.score.count()):
-    if (finalRuns.fow[i] == True):
-        finalFOW.append(finalRuns.score[i])
-    else:
-        finalFOW.append(None)
-
-# over = []
-# for i in range(finalRuns.score.count()):
-#     over.append(i/6)
-
-# finalRuns['over'] = over
+inn1_fow = fow(inn1)
+inn2_fow = fow(inn2)
 
 fig, ax = plt.subplots()
 
-ax.plot(finalRuns.score)
-ax.plot(finalFOW, 'r.', markersize = 10)
+ax.plot(inn1.score, 'b')
+ax.plot(inn1_fow, 'r.', markersize = 10)
 
-ax.set_title("Delhi Capitals")
+ax.plot(inn2.score, 'g')
+ax.plot(inn2_fow, 'r.', markersize = 10)
+
+ax.set_title(f"{match.batting_team[0]} Vs. {match.bowling_team[0]}")
 ax.set_xlabel("Balls")
 ax.set_ylabel("Runs")
+ax.legend([match.batting_team[0], 'Wicket', match.bowling_team[0]])
 
 plt.show()
