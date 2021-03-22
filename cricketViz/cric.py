@@ -1,64 +1,40 @@
 import pandas as pd
 import matplotlib.pyplot as plt
+import math
 
 match = pd.read_csv('1237181.csv')
 
-def runs(inning):
-    innings = match[match.innings == inning]
+def inningData(inningNum):
+
+    innings = match[match.innings == inningNum][['ball', 'batting_team', 'bowling_team', 'runs_off_bat', 'extras', 'wicket_type', 'player_dismissed']]
+    innings['runs'] = innings['runs_off_bat'] + innings['extras']
     innings = innings.reset_index()
     del innings['index']
-    wicket = innings.wicket_type
-    innings_formatted = innings[['runs_off_bat', 'extras']].sum(1)
+
+    count = innings.ball.count()
+
+    over = []
+    for i in range(count):
+        over.append(int(math.modf(innings.ball[i])[1]))
+
+    innings['over'] = over
 
     currentRun = []
-    for i in range(innings_formatted.count()):
+    for i in range(count):
         if (i == 0):
-            currentRun.append(innings_formatted[i])
+            currentRun.append(innings.runs[i])
         else:
-            currentRun.append(currentRun[i-1] + innings_formatted[i])
+            currentRun.append(currentRun[i-1] + innings.runs[i])
 
-    finalRuns = pd.DataFrame(currentRun, columns = ['score']);
-    finalRuns['wicket'] = wicket 
-
+    innings['score'] = currentRun
+    
     fow = []
-    for i in range(finalRuns.score.count()):
-        if (type(finalRuns.wicket[i]) == str):
+    for i in range(innings.score.count()):
+        if (type(innings.wicket_type[i]) == str):
             fow.append(True)
         else:
             fow.append(False)
 
-    finalRuns['fow'] = fow
-    del finalRuns['wicket']
+    innings['fow'] = fow
 
-    return finalRuns
-
-def fow(runs):
-    finalFOW = []
-    for i in range(runs.score.count()):
-        if (runs.fow[i] == True):
-            finalFOW.append(runs.score[i])
-        else:
-            finalFOW.append(None)
-    
-    return finalFOW
-
-inn1 = runs(1)
-inn2 = runs(2)
-
-inn1_fow = fow(inn1)
-inn2_fow = fow(inn2)
-
-fig, ax = plt.subplots()
-
-ax.plot(inn1.score, 'b')
-ax.plot(inn1_fow, 'r.', markersize = 10)
-
-ax.plot(inn2.score, 'g')
-ax.plot(inn2_fow, 'r.', markersize = 10)
-
-ax.set_title(f"{match.batting_team[0]} Vs. {match.bowling_team[0]}")
-ax.set_xlabel("Balls")
-ax.set_ylabel("Runs")
-ax.legend([match.batting_team[0], 'Wicket', match.bowling_team[0]])
-
-plt.show()
+    return innings
