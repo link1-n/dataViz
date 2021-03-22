@@ -7,6 +7,8 @@ match = pd.read_csv('1237181.csv')
 def runBarG(inningNum):
     innings = match[match.innings == inningNum][['ball', 'batting_team', 'runs_off_bat', 'extras', 'wicket_type', 'player_dismissed']]
     innings['runs'] = innings['runs_off_bat'] + innings['extras']
+    innings = innings.reset_index()
+    del innings['index']
 
     over = []
     for i in range(innings.ball.count()):
@@ -29,11 +31,13 @@ def runBarG(inningNum):
 inn1 = runBarG(1)
 inn2 = runBarG(2)
 
-fig, ax = plt.subplots()
+fn = [inn1, inn2]
 
-for i in range(2):
-    for obj in [inn1, inn2]:
-        ax[i].bar(obj.keys(), inn2.values())
+fig, ax = plt.subplots(2)
+
+for i, obj in enumerate(fn):
+    ax[i].bar(obj.keys(), obj.values())    
+    ax[i].set_title(f"{i}")
 
 plt.suptitle("Yes")
 
