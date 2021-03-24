@@ -25,7 +25,8 @@ def overData(inningNum):
         overWickets.append(count)
 
     overData = pd.DataFrame(list(zip(overRuns, overWickets)), columns = ['runs', 'number_wickets'])
-
+    overData['batting_team'] = innings['batting_team']
+    
 
     return overData
 
@@ -40,17 +41,19 @@ fig, ax = plt.subplots(2)
 for i, obj in enumerate(fn):
     obj.index.name = 'index'
 
-    ax[i].bar(obj.index, obj.runs)   
-    ax[i].set_title(f"{i}")
+    ax[i].bar(obj.index + 1, obj.runs)   
+    ax[i].set_title(f"{obj.batting_team[0]}")
 
     for j in range(20):
         for k in range(obj.number_wickets[j]):
-            cc = plt.Circle((i, (obj.runs[i] + k + 1)), 0.5, color = 'g') 
-            ax[i].add_artist( cc )
+            ax[i].scatter(j + 1, (obj.runs[j] + (k*2) + 1.5), color = 'r')
 
-    for axis in [ax[i].xaxis, ax[i].yaxis]:
-        axis.set_major_locator(ticker.MaxNLocator(integer=True))
+    ax[i].set_xlim(0.5, 20.5)
+    ax[i].set_xticks(range(1, 21))
 
-plt.suptitle("Yes")
+    # for axis in [ax[i].xaxis, ax[i].yaxis]:
+    #     axis.set_major_locator(ticker.MaxNLocator(integer=True))
 
+plt.suptitle("Innings Summary")
+plt.tight_layout()
 plt.show()
