@@ -6,7 +6,7 @@ match = pd.read_csv('1237181.csv')
 
 def inningData(inningNum):
 
-    innings = match[match.innings == inningNum][['ball', 'batting_team', 'bowling_team', 'runs_off_bat', 'extras', 'wicket_type', 'player_dismissed', 'striker']]
+    innings = match[match.innings == inningNum][['ball', 'batting_team', 'bowling_team', 'runs_off_bat', 'extras', 'wicket_type', 'player_dismissed', 'striker', 'non_striker', 'wides', 'noballs']]
     innings['runs'] = innings['runs_off_bat'] + innings['extras']
     innings = innings.reset_index()
     del innings['index']
